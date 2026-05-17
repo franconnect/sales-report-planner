@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FranConnect Leads Report Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --fc:#185FA5;--fc-mid:#378ADD;--fc-light:#E6F1FB;--fc-border:#B5D4F4;--fc-dark:#0C447C;
+  --bg:#F5F7FA;--surface:#fff;--border:#E2E8F0;--border-strong:#CBD5E1;
+  --text:#1E293B;--muted:#64748B;--hint:#94A3B8;
+  --green-bg:#EAF3DE;--green-text:#3B6D11;--green-border:#C0DD97;
+  --amber-bg:#FAEEDA;--amber-text:#854F0B;--amber-border:#FAC775;
+  --r:10px;--rs:6px;--rp:999px;
+}
+body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:2rem 1rem}
+.page{max-width:760px;margin:0 auto}
+.hdr{display:flex;align-items:center;gap:12px;margin-bottom:2rem}
+.logo{background:var(--fc);color:#fff;font-size:11px;font-weight:600;letter-spacing:.08em;padding:5px 12px;border-radius:var(--rs);text-transform:uppercase;flex-shrink:0}
+.hdr-title{font-size:20px;font-weight:600}
+.hdr-sub{font-size:13px;color:var(--muted);margin-top:1px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-title{font-size:15px;font-weight:600;margin-bottom:.4rem}
+.help{background:var(--fc-light);border-left:3px solid var(--fc-mid);border-radius:0 var(--rs) var(--rs) 0;padding:9px 13px;font-size:13px;color:var(--fc-dark);line-height:1.6;margin:.6rem 0 1rem}
+.help strong{font-weight:600}
+.tip{background:#FAFAFA;border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--muted);line-height:1.55;margin-top:8px}
+.tip strong{color:var(--text);font-weight:500}
+.warn-box{background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--amber-text);line-height:1.55;margin-top:4px}
+textarea,input[type=text],select{font-family:"DM Sans",sans-serif;font-size:14px;color:var(--text);background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--rs);padding:7px 10px;width:100%;transition:border-color .15s}
+textarea:focus,input[type=text]:focus,select:focus{outline:none;border-color:var(--fc-mid);box-shadow:0 0 0 3px rgba(55,138,221,.1)}
+textarea{resize:vertical;line-height:1.55}
+.btn{font-family:"DM Sans",sans-serif;font-size:14px;font-weight:500;border-radius:var(--rs);padding:8px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;border:1px solid transparent;transition:all .15s;white-space:nowrap}
+.btn-primary{background:var(--fc);color:#fff;border-color:var(--fc)}
+.btn-primary:hover{background:var(--fc-dark)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+.btn-ghost{background:transparent;color:var(--muted);border-color:var(--border-strong)}
+.btn-ghost:hover{background:var(--bg);color:var(--text)}
+.btn-sm{font-size:13px;padding:6px 12px}
+.add-btn{font-size:13px;color:var(--fc);background:none;border:1px dashed var(--fc-mid);border-radius:var(--rs);padding:7px 12px;cursor:pointer;width:100%;text-align:left;font-family:"DM Sans",sans-serif;display:flex;align-items:center;gap:5px;margin-top:4px}
+.add-btn:hover{background:var(--fc-light)}
+.rmv{background:none;border:none;cursor:pointer;color:var(--hint);font-size:18px;line-height:1;padding:0;flex-shrink:0}
+.rmv:hover{color:#E24B4A}
+.nav-row{display:flex;justify-content:space-between;align-items:center;margin-top:1rem}
+.divider{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.sec-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
+.pill{display:inline-block;background:var(--fc-light);color:var(--fc-dark);border-radius:var(--rp);padding:3px 9px;font-size:12px;margin:2px 3px 2px 0;border:1px solid var(--fc-border)}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 9px;border-radius:var(--rp)}
+.badge-tab{background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-border)}
+.badge-agg{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
+.chip{font-size:12px;padding:4px 11px;border:1px solid var(--border-strong);border-radius:var(--rp);cursor:pointer;color:var(--muted);background:var(--surface);transition:all .12s}
+.chip:hover{background:var(--fc-light);border-color:var(--fc-mid);color:var(--fc-dark)}
+.loading{padding:3rem;display:flex;flex-direction:column;align-items:center;gap:.85rem;color:var(--muted);font-size:14px;justify-content:center}
+.spinner{width:22px;height:22px;border:2.5px solid var(--border-strong);border-top-color:var(--fc);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mockup-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1rem}
+.mockup-bar{background:var(--fc);color:#fff;padding:10px 16px;display:flex;align-items:center;justify-content:space-between}
+.mockup-bar-name{font-size:14px;font-weight:600}
+.mockup-bar-meta{font-size:11px;opacity:.7}
+.mock-filter-bar{background:#F8FAFB;border-bottom:1px solid var(--border);padding:7px 14px;font-size:12px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.mock-filter-chip{background:var(--fc-light);color:var(--fc-dark);border:1px solid var(--fc-border);border-radius:var(--rp);padding:2px 9px;font-size:11px}
+.mock-table-wrap{overflow-x:auto}
+table.mock-table{width:100%;border-collapse:collapse;font-size:13px}
+table.mock-table th{background:#F8FAFB;color:var(--muted);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:9px 14px;border-bottom:2px solid var(--border);text-align:left;white-space:nowrap}
+table.mock-table td{padding:9px 14px;border-bottom:1px solid var(--border);color:var(--hint);white-space:nowrap;font-size:12px;font-style:italic}
+table.mock-table tr:nth-child(even) td{background:#FAFBFC}
+table.mock-table tr:last-child td{border-bottom:none}
+.mock-footer{padding:8px 14px;font-size:12px;color:var(--muted);border-top:1px solid var(--border);background:#FAFAFA}
+.agg-chart{padding:1.25rem 1.5rem}
+.agg-chart-title{font-size:13px;font-weight:600;margin-bottom:1rem}
+.bar-row{display:grid;grid-template-columns:160px 1fr 50px;gap:10px;align-items:center;margin-bottom:7px}
+.bar-label{font-size:12px;color:var(--text);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{background:#F1F5F9;border-radius:var(--rp);height:20px;overflow:hidden}
+.bar-fill{background:var(--fc-mid);height:100%;border-radius:var(--rp)}
+.bar-val{font-size:12px;color:var(--muted);font-family:"DM Mono",monospace}
+.briefing-box{background:#F8FAFB;border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;font-size:12.5px;color:var(--text);line-height:1.75;white-space:pre-wrap;font-family:"DM Mono",monospace;overflow-x:auto;margin-top:.75rem}
+.copy-btn{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--fc);background:none;border:1px solid var(--fc-border);border-radius:var(--rs);padding:6px 14px;cursor:pointer;margin-top:8px;font-family:"DM Sans",sans-serif;font-weight:500}
+.copy-btn:hover{background:var(--fc-light)}
+.preview-btn{font-size:11px;color:var(--fc);background:none;border:1px solid var(--fc-border);border-radius:var(--rp);padding:3px 9px;cursor:pointer;font-family:inherit;margin-top:5px;display:inline-flex;align-items:center;gap:4px}
+.preview-btn:hover{background:var(--fc-light)}
+.lb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;padding:1.5rem}
+.lb-overlay.open{display:flex}
+.lb-box{background:#fff;border-radius:10px;overflow:hidden;max-width:92vw;max-height:90vh;display:flex;flex-direction:column}
+.lb-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--fc);color:#fff}
+.lb-title{font-size:14px;font-weight:600}
+.lb-close{background:none;border:none;color:#fff;font-size:22px;cursor:pointer;line-height:1;padding:0}
+.lb-img-wrap{overflow:auto;flex:1}
+.lb-img-wrap img{display:block;max-width:100%;height:auto}
+
+.briefing{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-top:.75rem}
+.bf-header{background:var(--fc);color:#fff;padding:10px 16px}
+.bf-header-name{font-size:15px;font-weight:600}
+.bf-header-meta{font-size:12px;opacity:.75;margin-top:2px;display:flex;gap:12px}
+.bf-body{padding:1rem 1.25rem;display:flex;flex-direction:column;gap:1rem}
+.bf-section{}
+.bf-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:.5rem;display:flex;align-items:center;gap:6px}
+.bf-section-title::after{content:"";flex:1;height:1px;background:var(--border)}
+.bf-row{display:grid;grid-template-columns:130px 1fr;gap:6px;align-items:baseline;margin-bottom:4px}
+.bf-row-label{font-size:12px;font-weight:600;color:var(--muted)}
+.bf-row-value{font-size:13px;color:var(--text);font-family:"DM Mono",monospace}
+.bf-col-list{display:flex;flex-direction:column;gap:4px}
+.bf-col-item{display:flex;align-items:baseline;gap:8px}
+.bf-col-num{font-size:11px;color:var(--hint);font-family:"DM Mono",monospace;width:18px;text-align:right;flex-shrink:0}
+.bf-col-name{font-size:13px;font-weight:500;color:var(--text)}
+.bf-col-tab{font-size:11px;color:var(--hint);margin-left:4px}
+.bf-filter-card{background:#F8FAFB;border:1px solid var(--border);border-radius:var(--rs);padding:9px 12px;display:flex;flex-direction:column;gap:4px}
+.bf-filter-card.warn{background:#FFFBF0;border-color:var(--amber-border)}
+.bf-filter-row{display:grid;grid-template-columns:80px 1fr;gap:4px;align-items:baseline}
+.bf-filter-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.bf-filter-val{font-size:13px;color:var(--text);font-family:"DM Mono",monospace}
+.bf-warn-msg{font-size:11px;color:var(--amber-text);display:flex;gap:5px;align-items:flex-start;margin-top:3px}
+.bf-steps{display:flex;flex-direction:column;gap:5px;counter-reset:steps}
+.bf-step{display:flex;gap:10px;align-items:flex-start}
+.bf-step-num{width:22px;height:22px;border-radius:50%;background:var(--fc);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.bf-step-text{font-size:13px;color:var(--text);padding-top:2px;line-height:1.5}
+.bf-step-text strong{font-weight:600;font-family:"DM Mono",monospace;color:var(--fc-dark)}
+.bf-note{background:var(--fc-light);border:1px solid var(--fc-border);border-radius:var(--rs);padding:8px 12px;font-size:12px;color:var(--fc-dark);line-height:1.55}
+.bf-note ul{margin-top:4px;padding-left:1rem}
+.bf-note li{margin-bottom:2px}
+.bf-instr{background:#F8FAFB;border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px}
+.bf-instr ul{padding-left:1.1rem;margin:0;display:flex;flex-direction:column;gap:3px}
+.bf-instr li{font-size:12px;color:var(--muted);line-height:1.5}
+.bf-instr li strong{color:var(--text);font-weight:500}
+.bf-filter-and{font-size:11px;color:var(--hint);text-align:center;padding:2px 0;font-style:italic}
+
+.col-status{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.col-status-ok{background:var(--green-bg);color:var(--green-text);border:1px solid var(--green-border)}
+.col-status-warn{background:var(--amber-bg);color:var(--amber-text);border:1px solid var(--amber-border)}
+.col-status-unknown{background:var(--red-bg);color:var(--red-text);border:1px solid var(--red-border)}
+.col-suggestion{font-size:11px;color:var(--amber-text);margin-top:3px;padding:3px 8px;background:var(--amber-bg);border-radius:var(--rs);border:1px solid var(--amber-border);display:flex;align-items:center;gap:5px}
+.col-suggestion button{font-size:11px;color:var(--fc);background:none;border:none;cursor:pointer;padding:0;font-family:inherit;font-weight:500;text-decoration:underline}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+<div class="page">
+  <div class="hdr">
+    <div class="logo">FranConnect</div>
+    <div>
+      <div class="hdr-title">Leads Report Planner</div>
+      <div class="hdr-sub">Describe what you want &mdash; we&rsquo;ll build the report spec for you</div>
+    </div>
+  </div>
+  <div id="app"></div>
+</div>
+
+<div class="lb-overlay" id="lbOverlay" onclick="if(event.target===this)closeLightbox()">
+  <div class="lb-box">
+    <div class="lb-header">
+      <span class="lb-title" id="lbTitle"></span>
+      <button class="lb-close" onclick="closeLightbox()">&times;</button>
+    </div>
+    <div class="lb-img-wrap"><img id="lbImg" src="" alt="Report screenshot"></div>
+  </div>
+</div>
+
+<script>
+// ── Screenshots (embedded) ───────────────────────────────────────────────────
+const SCREENSHOTS = {
+  'c1': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Leads%20by%20Owner%20and%20Status%20Report.png',
+  'c10': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Leads%20per%20month%20report.png',
+  'c11': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Status%20Change%20Report.png',
+  'c12': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Marketing%20Costs%20ROI%20Analysis%20Report.png',
+  'c13': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Leads%20per%20Sales%20Territory%20Report.png',
+  'c14': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Time%20Lines%20Report.png',
+  'c15': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Sales%20Owner%20Performance%20Analysis%20Report.png',
+  'c16': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Closings%20Per%20Month%20Report.png',
+  'c18': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/%23%20of%20Locations%20Sold%20Per%20Lead%20Report.png',
+  'c2': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Source%20Report.png',
+  'c21': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Master%20Tracking%20-%20Performance%20Comparison%20Report.png',
+  'c22': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Heat%20Index%20Report.png',
+  'c23': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Discover%20Day%20Visit%20Report.png',
+  'c24': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Email%20Status%20Report.png',
+  'c25': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Track%20Inactive%20%28without%20any%20activity%29%20Leads%20Report.png',
+  'c26': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Call%20Activity%20Report.png',
+  'c27': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Contact%20Details%20Report.png',
+  'c28': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Website%20Activity%20Report.png',
+  'c29': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Email%20Subscription%20Report.png',
+  'c2b': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Leads%20per%20Sales%20Territory%20Report.png',
+  'c3': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Master%20Tracking%20by%20Lead%20Owner%20Report.png',
+  'c4': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Status%20Report.png',
+  'c41': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Candidate%20Portal%20Report.png',
+  'c42': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Candidate%20Portal%20Activity%20Report.png',
+  'c5': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Closings%20by%20Source%20Report.png',
+  'c6': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Lead%20Status%20Pipeline%20Report.png',
+  'c7': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Killed%20Lead%20Analysis%20Report.png',
+  'c8': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Sales%20Forecasting%20Report.png',
+  'c9': 'https://raw.githubusercontent.com/franconnect/sales-report-planner/main/images/Closings%20by%20Owner%20Report.png',
+};
+
+
+// ── Field knowledge base ─────────────────────────────────────────────────────
+const FIELD_KNOWLEDGE = `
+FranConnect Sales Module — exact field labels, tabs, and known values:
+
+PRIMARY INFO > Contact Information:
+  First Name (Text), Last Name (Text), Inquiry Date (Date, auto-set on entry),
+  Email (Text), Mobile (Text — this is the cell/mobile field),
+  Work Phone (Text), Home Phone (Text),
+  City (Text), State / Province (dropdown), Country (dropdown), Zip / Postal Code (Text)
+
+PRIMARY INFO > Lead Details:
+  Lead Status (Dropdown) — VALUES ARE CUSTOMIZED PER ACCOUNT, do not assume defaults
+  Lead Owner (Dropdown) — the assigned sales rep
+  Lead Source Category (Dropdown) — values: Advertisement, Brokers, Import, Internet, Referred by, Search
+  Lead Source Details (Dropdown) — DEPENDENT on Category; must pick Category first.
+    Internet details include: FranchiseGator, Franchise Direct Lead, Entrepreneur.com,
+    Website, FranchiseOnline.com, BeTheBoss, Boefly, franchise.org, and many others.
+    Advertisement details: Magazine, Newspaper, Trade Shows, Other
+    Search details: Google, Yahoo, MSN, Other
+    Referred by details: Friend, Family, Co-workers
+  Cash Available for Investment (Text)
+  Current Net Worth (Text)
+  Investment Timeframe (Dropdown) — values vary by account
+  Lead Rating (Dropdown) — Hot, Warm, Cold, None
+  Franchise Awarded (Checkbox)
+  Next Call Date (Date)
+  Marketing Code (Dropdown)
+
+IMPORTANT — Lead Source Details dependency:
+  Filtering by Lead Source Details REQUIRES a Lead Source Category filter first.
+  Always output TWO filter rows: Category first, then Details.
+  Example: "leads from FranchiseGator" = [Category=Internet] AND [Details=FranchiseGator]
+  This is the same pattern as Country/State — country must be set before state populates.
+
+Filter operators available:
+  equals, does not equal, contains, is (one of), is greater than, is less than,
+  is before, is after, is in this month, is in last month, is in this year,
+  is in last year, is in the last 7 days, is empty, is not empty
+`;
+
+// ── Standard reports ─────────────────────────────────────────────────────────
+const CANNED_CATEGORIES = [
+  { cat: "Lead Count Reports", reports: [
+    {id:"c10", screenshot:"c10", name:"Leads per Month Report",                    desc:"Monthly breakdown of lead totals by owner. Look for seasonality and trends."},
+    {id:"c13", screenshot:"c13", name:"Leads per Sales Territory Report",          desc:"Count of leads by country, state, or territory — bar chart with drillable detail."}
+  ]},
+  { cat: "Lead Status Based Reports", reports: [
+    {id:"c4",  screenshot:"c4",  name:"Lead Status Report",                        desc:"Bar chart of how many leads are in each status right now."},
+    {id:"c14", screenshot:"c14",  name:"Lead Time Lines Report",                    desc:"How long has each lead spent in each status? Identifies where deals are stalling."},
+    {id:"c6",  screenshot:"c6",  name:"Lead Status Pipeline Report",               desc:"Kanban-style snapshot: leads in each status with days in that status and total days in system."},
+    {id:"c11", screenshot:"c11",  name:"Lead Status Change Report",                 desc:"Full history of status changes — when, by whom, from/to. Export and pivot for funnel analysis."}
+  ]},
+  { cat: "Lead Owner Based Reports", reports: [
+    {id:"c1",  screenshot:"c1",  name:"Leads by Owner and Status Report",          desc:"See how each rep is moving leads through the pipeline. Compare workload and performance."},
+    {id:"c8",  screenshot:"c8",  name:"Sales Forecasting Report",                  desc:"What deals are due to close and when, by rep? Shows forecast date, probability, and weighted revenue."},
+    {id:"c15", screenshot:"c15",  name:"Sales Owner Performance Analysis Report",   desc:"Historical view of how many leads each owner moved through each milestone."},
+    {id:"c3",  screenshot:"c3",  name:"Master Tracking By Lead Owner",             desc:"How many leads made it through each funnel stage by owner? Identify problem stages."}
+  ]},
+  { cat: "Lead to Franchise Conversion Reports", reports: [
+    {id:"c16", screenshot:"c16",  name:"Closings per Month Report",                 desc:"Year-over-year comparison of new and closed leads by month."},
+    {id:"c9",  screenshot:"c9",  name:"Closings by Owner Report",                  desc:"Compare new, active, and closed deals per rep."},
+    {id:"c5",  screenshot:"c5",  name:"Closings by Source Report",                 desc:"Which sources produce actual closed deals? Influence marketing spend with this."},
+    {id:"c17", screenshot:null,  name:"Lead Conversion by Brokers Report",         desc:"Which brokers send the best leads? Compare broker pool performance."},
+    {id:"c12", screenshot:"c12",  name:"Marketing Costs ROI Analysis Report",       desc:"Cost per lead and cost per closed deal by source."},
+    {id:"c18", screenshot:"c18",  name:"# of Locations Sold per Lead Report",       desc:"Track multi-unit deal volume."},
+    {id:"c19", screenshot:null,  name:"Franchise Agreement Fee Collection Report", desc:"Initial franchise payment fee collection from leads."}
+  ]},
+  { cat: "Lead Source Reports", reports: [
+    {id:"c2",  screenshot:"c2",  name:"Lead Source Report",                        desc:"Where do leads come from? Count by source per month."},
+    {id:"c20", screenshot:null,  name:"Master Tracking Report",                    desc:"For each source, how many leads make it to each funnel stage?"},
+    {id:"c21", screenshot:"c21",  name:"Master Tracking Performance Comparison",    desc:"Compare pipeline balance between two time periods."}
+  ]},
+  { cat: "Activity Reports", reports: [
+    {id:"c22", screenshot:"c22",  name:"Lead Heat Index Report",                    desc:"What is driving each lead heat index score?"},
+    {id:"c23", screenshot:"c23",  name:"Discovery Day Visit Report",                desc:"Track which leads attended a Discovery Day."},
+    {id:"c24", screenshot:"c24",  name:"Email Status Report",                       desc:"Emails sent — to whom, when, and whether they were read."},
+    {id:"c25", screenshot:"c25",  name:"Track Inactive Leads Report",               desc:"Leads with no activity for a period — catch leads escaping through inattention."},
+    {id:"c26", screenshot:"c26",  name:"Call Activity Report",                      desc:"Call counts and outcomes by owner."},
+    {id:"c27", screenshot:"c27",  name:"Lead Contacted Details Report",             desc:"Count of calls and emails per lead."},
+    {id:"c28", screenshot:"c28",  name:"Website Activity Report",                   desc:"Leads who came in or completed activity via web forms."},
+    {id:"c29", screenshot:"c29",  name:"Email Subscription Report",                 desc:"Opt-in and opt-out status."}
+  ]},
+  { cat: "Killed Lead Reports", reports: [
+    {id:"c30", screenshot:null,  name:"Killed Lead Count by Source Report",        desc:"Which sources produce the most dead leads?"},
+    {id:"c7",  screenshot:"c7",  name:"Killed Lead Analysis Report",               desc:"Why are leads not closing, and at what stage do they fall out?"}
+  ]},
+  { cat: "Campaign Reports", reports: [
+    {id:"c31", screenshot:null,  name:"Lead Unsubscribed Report",                  desc:"Which leads have opted out of campaign emails?"},
+    {id:"c32", screenshot:null,  name:"Campaign Unsubscribed Report",              desc:"Which campaigns have the most unsubscribes?"},
+    {id:"c33", screenshot:null,  name:"Number of Emails Sent Report",              desc:"Total emails sent per campaign."},
+    {id:"c34", screenshot:null,  name:"Click Through Rate Report",                 desc:"Click-through rate per campaign."},
+    {id:"c35", screenshot:null,  name:"Number of Current Subscribers Report",      desc:"How many leads are subscribed to each campaign?"}
+  ]},
+  { cat: "FDD Reports", reports: [
+    {id:"c36", screenshot:null,  name:"FDD Tracking Report",                       desc:"FDD versions and how many leads have been sent each one."},
+    {id:"c37", screenshot:null,  name:"Prospect Tracking Report",                  desc:"Which FDD was sent to each lead, and has it been downloaded?"}
+  ]},
+  { cat: "Analytics Reports", reports: [
+    {id:"c38", screenshot:null,  name:"Franchise Awarding and Opening Progress",   desc:"Track franchise awards and progress toward projected openings."},
+    {id:"c39", screenshot:null,  name:"Franchise Sales Scorecard",                 desc:"Sales optimization overview with status group breakdown."},
+    {id:"c40", screenshot:null,  name:"Sales Forecasting and Projections",         desc:"Forward-looking pipeline and revenue projections."}
+  ]},
+  { cat: "Candidate Portal Reports", reports: [
+    {id:"c41", screenshot:"c41",  name:"Candidate Portal Report",                   desc:"Overall candidate portal activity for a time period."},
+    {id:"c42", screenshot:"c42",  name:"Candidate Portal Activity Report",          desc:"Per-lead breakdown of candidate portal activity."}
+  ]}
+];
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let S = {
+  view: "describe",
+  description: "",
+  inputMode: "describe",   // "describe" | "upload"
+  uploadContent: null,     // {type:"image"|"document"|"text", data:..., mediaType:..., fileName:...}
+  spec: null,
+  mockupData: null,
+  briefingText: ""
+};
+
+let _cannedExpanded = false;
+
+// ── Utilities ─────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function render() {
+  const views = { describe:vDescribe, interpreting:vInterpreting, review:vReview, generating:vGenerating, mockup:vMockup };
+  const fn = views[S.view] || vDescribe;
+  document.getElementById("app").innerHTML = fn();
+}
+
+// ── Lightbox ──────────────────────────────────────────────────────────────────
+function openLightbox(id, name) {
+  const src = SCREENSHOTS[id];
+  if (!src) return;
+  document.getElementById("lbImg").src = src;
+  document.getElementById("lbTitle").textContent = name;
+  document.getElementById("lbOverlay").classList.add("open");
+  document.body.style.overflow = "hidden";
+}
+function closeLightbox() {
+  document.getElementById("lbOverlay").classList.remove("open");
+  document.body.style.overflow = "";
+}
+
+// ── Canned reports ────────────────────────────────────────────────────────────
+function cannedRow(r) {
+  const hasShot = r.screenshot && SCREENSHOTS[r.screenshot];
+  const btn = hasShot
+    ? `<button class="preview-btn" onclick="event.stopPropagation();openLightbox('${r.screenshot}','${r.name.replace(/'/g,"&#39;")}')">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        See what it looks like
+      </button>`
+    : "";
+  return `<div style="background:var(--bg);border:1px solid var(--border);border-radius:var(--rs);padding:8px 12px">
+    <div style="font-size:13px;font-weight:500;color:var(--text)">${esc(r.name)}</div>
+    <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4">${esc(r.desc)}</div>
+    ${btn}
+  </div>`;
+}
+
+function renderCannedList(expanded) {
+  const cats = expanded ? CANNED_CATEGORIES : CANNED_CATEGORIES.slice(0, 2);
+  return cats.map(cat => `
+    <div style="margin-bottom:.85rem">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid var(--border)">${esc(cat.cat)}</div>
+      <div style="display:flex;flex-direction:column;gap:5px">${cat.reports.map(r => cannedRow(r)).join("")}</div>
+    </div>`).join("");
+}
+
+function toggleAllCanned() {
+  _cannedExpanded = !_cannedExpanded;
+  const el = document.getElementById("cannedList");
+  const btn = document.getElementById("cannedToggle");
+  if (el) el.innerHTML = renderCannedList(_cannedExpanded);
+  if (btn) btn.textContent = _cannedExpanded ? "Show fewer" : "Show all categories";
+}
+
+// ── STEP 1: Describe ──────────────────────────────────────────────────────────
+function vDescribe() {
+  const modeDescribe = S.inputMode === "describe";
+  const modeUpload   = S.inputMode === "upload";
+
+  const tabBtnBase = "flex:1;padding:8px 12px;font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;border:none;transition:all .15s";
+  const tabBar = `<div style="display:flex;gap:0;border:1px solid var(--border-strong);border-radius:var(--rs);overflow:hidden;margin-bottom:1rem">
+    <button style="${tabBtnBase};border-right:1px solid var(--border-strong);background:${modeDescribe?"var(--fc)":"var(--bg)"};color:${modeDescribe?"#fff":"var(--muted)"}" onclick="S.inputMode='describe';S.uploadContent=null;render()">
+      &#9999;&#65039; Describe it
+    </button>
+    <button style="${tabBtnBase};background:${modeUpload?"var(--fc)":"var(--bg)"};color:${modeUpload?"#fff":"var(--muted)"}" onclick="S.inputMode='upload';S.description='';render()">
+      &#128206; Upload a report
+    </button>
+  </div>`;
+
+  const describePanel = `
+    <div class="help">Describe it in plain English. We will figure out the report type, columns, and filters from your description.<br><br>
+    <strong>Examples:</strong><br>
+    &ldquo;Show me all leads from FranchiseGator this year with their status and owner&rdquo;<br>
+    &ldquo;How many leads came from each source last quarter?&rdquo;<br>
+    &ldquo;Every lead assigned to Sarah that has been in Discovery for more than 30 days&rdquo;</div>
+    <textarea id="descInput" style="min-height:110px" placeholder="Describe what you want to see..." oninput="S.description=this.value;const b=document.getElementById('interpBtn');if(b)b.disabled=!this.value.trim()">${esc(S.description)}</textarea>
+    <div class="tip">Be as vague or precise as you like. You will get a chance to review and edit everything before the briefing is generated.</div>`;
+
+  const uploadPanel = `
+    <div class="help">Upload a screenshot, PDF, Excel, CSV, or Word file of a report you like — or one that's close to what you need. We'll read the columns, filters, and structure and build a spec from it.<br><br>
+    <strong>Works with:</strong> PNG, JPG, PDF, Excel (.xlsx/.xls), CSV, Word (.docx)</div>
+    <div id="dropZone" style="border:2px dashed var(--border-strong);border-radius:var(--r);padding:2rem;text-align:center;cursor:pointer;transition:all .15s;background:var(--bg)"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault();this.style.borderColor='var(--fc-mid)';this.style.background='var(--fc-light)'"
+      ondragleave="this.style.borderColor='var(--border-strong)';this.style.background='var(--bg)'"
+      ondrop="event.preventDefault();this.style.borderColor='var(--border-strong)';this.style.background='var(--bg)';handleFileDrop(event.dataTransfer.files[0])">
+      <div style="font-size:24px;margin-bottom:.5rem">📎</div>
+      <div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:.25rem">Drop a file here or click to browse</div>
+      <div style="font-size:12px;color:var(--muted)">PNG, JPG, PDF, Excel, CSV, Word</div>
+    </div>
+    <input type="file" id="fileInput" accept=".png,.jpg,.jpeg,.gif,.webp,.pdf,.xlsx,.xls,.csv,.docx,.doc" style="display:none" onchange="handleFileSelect(this.files[0])">
+    ${S.uploadContent ? `<div style="margin-top:.75rem;background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--rs);padding:9px 13px;font-size:13px;color:var(--green-text);display:flex;align-items:center;gap:8px">
+      <span>✓</span>
+      <span><strong>${esc(S.uploadContent.fileName)}</strong> ready — click &ldquo;Build my report spec&rdquo; to interpret it</span>
+      <button style="margin-left:auto;background:none;border:none;cursor:pointer;color:var(--green-text);font-size:16px" onclick="S.uploadContent=null;render()">×</button>
+    </div>` : ""}`;
+
+  const canGo = modeDescribe ? S.description.trim().length > 0 : S.uploadContent !== null;
+
+  return `<div class="card">
+    <div class="card-title">What kind of leads report do you need?</div>
+    ${tabBar}
+    ${modeDescribe ? describePanel : uploadPanel}
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:.3rem">Or &mdash; check if a standard report already does what you need</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:.75rem">FranConnect has many built-in reports. Screenshots available on reports marked with a preview button.</div>
+    <div id="cannedList">${renderCannedList(false)}</div>
+    <button class="btn btn-ghost btn-sm" style="margin-top:8px" id="cannedToggle" onclick="toggleAllCanned()">Show all categories</button>
+  </div>
+
+  <div class="nav-row">
+    <span></span>
+    <button class="btn btn-primary" id="interpBtn" onclick="interpret()" ${canGo?"":"disabled"}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Build my report spec
+    </button>
+  </div>`;
+}
+function vInterpreting() {
+  return `<div class="loading">
+    <div class="spinner"></div>
+    <div>Reading your description&hellip;</div>
+    <div style="font-size:12px;color:var(--hint)">Figuring out report type, columns, and filters</div>
+  </div>`;
+}
+
+
+// ── File upload handling ──────────────────────────────────────────────────────
+async function handleFileSelect(file) {
+  if (!file) return;
+  await processFile(file);
+}
+
+async function handleFileDrop(file) {
+  if (!file) return;
+  await processFile(file);
+}
+
+async function processFile(file) {
+  const name = file.name;
+  const ext = name.split('.').pop().toLowerCase();
+  const imageTypes = ['png','jpg','jpeg','gif','webp'];
+  const mediaTypeMap = {'png':'image/png','jpg':'image/jpeg','jpeg':'image/jpeg','gif':'image/gif','webp':'image/webp'};
+
+  const dz = document.getElementById('dropZone');
+  if (dz) dz.innerHTML = '<div style="font-size:13px;color:var(--muted)">Reading file&hellip;</div>';
+
+  try {
+    if (imageTypes.includes(ext)) {
+      const b64 = await fileToBase64(file);
+      S.uploadContent = {type:'image', data:b64, mediaType:mediaTypeMap[ext]||'image/png', fileName:name};
+
+    } else if (ext === 'pdf') {
+      const b64 = await fileToBase64(file);
+      S.uploadContent = {type:'document', data:b64, mediaType:'application/pdf', fileName:name};
+
+    } else if (['xlsx','xls'].includes(ext)) {
+      const text = await readExcelAsText(file);
+      S.uploadContent = {type:'text', data:text, fileName:name};
+
+    } else if (ext === 'csv') {
+      const text = await readTextFile(file);
+      S.uploadContent = {type:'text', data:text, fileName:name};
+
+    } else if (['docx','doc'].includes(ext)) {
+      const text = await readDocxAsText(file);
+      S.uploadContent = {type:'text', data:text, fileName:name};
+
+    } else {
+      const text = await readTextFile(file);
+      S.uploadContent = {type:'text', data:text, fileName:name};
+    }
+  } catch(e) {
+    S.uploadContent = null;
+    console.error('processFile error:', e);
+    alert('Could not read file: ' + e.message);
+  }
+  // Always re-enable the button if upload succeeded
+  const btn = document.getElementById('interpBtn');
+  if (btn) btn.disabled = !S.uploadContent;
+  render();
+}
+
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result.split(',')[1]);
+    r.onerror = reject;
+    r.readAsDataURL(file);
+  });
+}
+
+function readTextFile(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result);
+    r.onerror = reject;
+    r.readAsText(file);
+  });
+}
+
+async function readExcelAsText(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = async (e) => {
+      try {
+        // First try SheetJS if available
+        if (window.XLSX) {
+          const wb = XLSX.read(e.target.result, {type:'array'});
+          let out = '';
+          wb.SheetNames.forEach(sname => {
+            const ws = wb.Sheets[sname];
+            out += 'Sheet: ' + sname + '\n' + XLSX.utils.sheet_to_csv(ws) + '\n\n';
+          });
+          resolve(out.slice(0, 12000));
+          return;
+        }
+        // Fallback: use JSZip to extract sharedStrings.xml and sheet data
+        if (window.JSZip) {
+          const zip = await JSZip.loadAsync(e.target.result);
+          let text = '';
+          // Get shared strings (the actual cell text values)
+          const ssFile = zip.file('xl/sharedStrings.xml');
+          if (ssFile) {
+            const xml = await ssFile.async('string');
+            // Extract text content from <t> tags
+            const matches = xml.match(/<t[^>]*>([^<]+)<\/t>/g) || [];
+            const strings = matches.map(m => m.replace(/<[^>]+>/g, ''));
+            text += strings.join('\t') + '\n';
+          }
+          // Also try to get sheet1 data for structure
+          const sheetFile = zip.file('xl/worksheets/sheet1.xml');
+          if (sheetFile) {
+            const xml = await sheetFile.async('string');
+            // Extract cell values
+            const vals = xml.match(/<v>([^<]+)<\/v>/g) || [];
+            text += vals.map(v => v.replace(/<[^>]+>/g, '')).join('\t') + '\n';
+          }
+          resolve(text.slice(0, 12000));
+          return;
+        }
+        // Last resort: binary ASCII extraction
+        const arr = new Uint8Array(e.target.result);
+        let out = '', cur = '';
+        for (let i = 0; i < arr.length; i++) {
+          const c = arr[i];
+          if (c >= 32 && c < 127) { cur += String.fromCharCode(c); }
+          else { if (cur.length > 3) out += cur + '\t'; cur = ''; }
+        }
+        resolve(out.slice(0, 12000));
+      } catch(err) {
+        console.error('readExcelAsText error:', err);
+        reject(err);
+      }
+    };
+    r.onerror = reject;
+    r.readAsArrayBuffer(file);
+  });
+}
+
+async function readDocxAsText(file) {
+  // DOCX is a ZIP — extract word/document.xml and strip tags
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = async (e) => {
+      try {
+        // Use JSZip if available
+        if (window.JSZip) {
+          const zip = await JSZip.loadAsync(e.target.result);
+          const xmlFile = zip.file('word/document.xml');
+          if (!xmlFile) { resolve('(could not read document.xml)'); return; }
+          const xml = await xmlFile.async('string');
+          // Strip XML tags, decode common entities, collapse whitespace
+          const text = xml
+            .replace(/<w:p[ >]/g, '\n<w:p>')   // paragraph breaks
+            .replace(/<[^>]+>/g, '')            // strip all tags
+            .replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>')
+            .replace(/&nbsp;/g,' ').replace(/&#x[0-9A-F]+;/gi,'')
+            .replace(/[ \t]+/g,' ')
+            .trim();
+          resolve(text.slice(0, 12000));
+        } else {
+          // Fallback: read as binary and extract text runs
+          const arr = new Uint8Array(e.target.result);
+          // Look for UTF-16 text between XML tags in the ZIP
+          let text = '';
+          const decoder = new TextDecoder('utf-8', {fatal:false});
+          // Try reading as UTF-8 and stripping tags
+          const raw = decoder.decode(arr);
+          const stripped = raw.replace(/<[^>]+>/g,'').replace(/[^\x20-\x7E\n]/g,' ').replace(/\s+/g,' ');
+          resolve(stripped.slice(0, 12000));
+        }
+      } catch(err) { reject(err); }
+    };
+    r.onerror = reject;
+    r.readAsArrayBuffer(file);
+  });
+}
+
+async function interpret() {
+  const ta = document.getElementById("descInput");
+  if (ta) S.description = ta.value.trim();
+
+  const hasUpload = S.uploadContent !== null;
+  const hasDesc = S.description.length > 0;
+  if (!hasUpload && !hasDesc) return;
+
+  S.view = "interpreting";
+  render();
+
+  const basePrompt = `You are a FranConnect Sales module reporting expert.
+
+${FIELD_KNOWLEDGE}
+
+Determine the following and return ONLY valid JSON — no markdown, no explanation:
+
+1. reportType: "tabular" (list of leads) or "aggregate" (count by one field)
+   Use "aggregate" for: how many, count, breakdown by, chart, trend by category
+   Use "tabular" for: list of leads, show me, which leads, details about
+
+2. reportName: short descriptive name
+
+3. columns (tabular only): array of {name, tab, confident} using exact FC field names.
+   Always start with: First Name, Last Name, Inquiry Date (Primary Info > Contact Information)
+   Add fields matching the description.
+   Set confident:false if you are unsure of the exact field name or tab path.
+
+4. groupBy (aggregate only): the single field to count by
+
+5. filters: array of {field, operator, value, confident, warning}
+   CRITICAL: Lead Source Details always needs Lead Source Category as a separate filter FIRST.
+   Lead Status values are account-customized — set confident:false and add a warning.
+   Use null for warning when not needed.
+
+6. suggestions: array of up to 2 {type ("column" or "filter"), label, reason}
+
+JSON shape:
+{
+  "reportType": "tabular",
+  "reportName": "string",
+  "columns": [{"name": "string", "tab": "string", "confident": true}],
+  "groupBy": null,
+  "filters": [{"field": "string", "operator": "string", "value": "string", "confident": true, "warning": null}],
+  "suggestions": [{"type": "column", "label": "string", "reason": "string"}]
+}`;
+
+  // Build API message content based on input mode
+  let messageContent;
+  if (hasUpload && S.uploadContent) {
+    const uc = S.uploadContent;
+    const contextNote = S.description ? `
+
+Additional context from user: "${S.description}"` : "";
+    const uploadPrompt = `You are a FranConnect Sales module reporting expert.
+
+A user uploaded a file — either a screenshot of a FranConnect Sales/Leads report, an Excel file with field names, or a document describing what they need.
+
+Your job:
+1. Read the file carefully. If it is a screenshot, read the column headers, report title, any visible filters, and whether it shows a list of leads (tabular) or a chart/count (aggregate).
+2. If it is an Excel or text file, read the field names or column headers present.
+3. Map everything you see to the exact FranConnect Sales field names and tab paths from the reference below.
+4. Return a complete report spec.
+
+${contextNote}
+
+${FIELD_KNOWLEDGE}
+
+Return ONLY valid JSON in EXACTLY this shape — no markdown, no explanation:
+{
+  "reportType": "tabular",
+  "reportName": "string",
+  "columns": [{"name": "string", "tab": "string", "confident": true}],
+  "groupBy": null,
+  "filters": [{"field": "string", "operator": "string", "value": "string", "confident": true, "warning": null}],
+  "suggestions": [{"type": "column", "label": "string", "reason": "string"}]
+}`;
+
+    if (uc.type === 'image') {
+      messageContent = [
+        {type:"image", source:{type:"base64", media_type:uc.mediaType, data:uc.data}},
+        {type:"text", text:uploadPrompt}
+      ];
+    } else if (uc.type === 'document') {
+      messageContent = [
+        {type:"document", source:{type:"base64", media_type:"application/pdf", data:uc.data}},
+        {type:"text", text:uploadPrompt}
+      ];
+    } else {
+      // Text (Excel, CSV, etc.)
+      messageContent = [{type:"text", text:`${uploadPrompt}
+
+File contents (${uc.fileName}):
+${uc.data}`}];
+    }
+  } else {
+    // Plain description
+    const descPrompt = `You are a FranConnect Sales module reporting expert. A user described what they want from a leads report.
+
+User description: "${S.description}"
+
+${basePrompt}`;
+    messageContent = [{type:"text", text:descPrompt}];
+  }
+
+  const prompt = `placeholder`; // kept for structure — actual prompt is in messageContent
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "x-api-key": "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", "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: "Return ONLY valid JSON. No markdown, no backticks, no explanation.",
+        messages: [{role: "user", content: messageContent}]
+      })
+    });
+    const data = await res.json();
+    const raw = (data.content?.find(b => b.type === "text")?.text || "{}").replace(/```[a-z]*|```/g, "").trim();
+    console.log("Claude raw response:", raw.slice(0, 500));
+    S.spec = JSON.parse(raw);
+    console.log("Parsed spec:", JSON.stringify(S.spec).slice(0, 300));
+  } catch(e) {
+    console.error("interpret() error:", e, "raw was:", typeof raw !== 'undefined' ? raw.slice(0,200) : 'n/a');
+    S.spec = {error: true, reportType: "tabular", reportName: "", columns: [], groupBy: null, filters: [], suggestions: []};
+  }
+
+  S.view = "review";
+  render();
+}
+
+// ── STEP 3: Review spec ───────────────────────────────────────────────────────
+const FILTER_OPS = ["equals","does not equal","contains","is (one of)","is greater than","is less than",
+  "is before","is after","is in this month","is in last month","is in this year","is in last year",
+  "is in the last 7 days","is empty","is not empty"];
+
+function vReview() {
+  const spec = S.spec;
+  if (!spec || spec.error) {
+    return `<div class="card">
+      <div style="color:#E24B4A;font-size:14px;margin-bottom:1rem">Could not interpret the description &mdash; try again with a bit more detail.</div>
+      <button class="btn btn-ghost" onclick="S.view='describe';render()">&#8592; Try again</button>
+    </div>`;
+  }
+  const isAgg = spec.reportType === "aggregate";
+
+  return `
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:.75rem;flex-wrap:wrap">
+    <div>
+      <div style="font-size:16px;font-weight:600">Here is what I understood</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">Review and edit anything, then generate your briefing.</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="S.view='describe';render()">&#8592; Edit description</button>
+  </div>
+
+  <div class="card">
+    <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px">
+        <div class="sec-label">Report type</div>
+        <div style="display:flex;gap:7px;margin-top:5px">
+          <button class="btn btn-sm ${isAgg ? "btn-ghost" : "btn-primary"}" onclick="S.spec.reportType='tabular';render()">&#128203; Tabular</button>
+          <button class="btn btn-sm ${isAgg ? "btn-primary" : "btn-ghost"}" onclick="S.spec.reportType='aggregate';render()">&#128202; Aggregate</button>
+        </div>
+      </div>
+      <div style="flex:2;min-width:200px">
+        <div class="sec-label">Report name</div>
+        <input type="text" value="${esc(spec.reportName)}" oninput="S.spec.reportName=this.value" placeholder="Report name" style="margin-top:5px">
+      </div>
+    </div>
+  </div>
+
+  ${isAgg ? vReviewAgg(spec) : vReviewColumns(spec)}
+  ${vReviewFilters(spec)}
+  ${spec.suggestions && spec.suggestions.length ? vReviewSuggestions(spec) : ""}
+
+  <div class="nav-row">
+    <button class="btn btn-ghost" onclick="S.view='describe';render()">&#8592; Back</button>
+    <button class="btn btn-primary" onclick="generate()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Generate briefing &amp; preview
+    </button>
+  </div>`;
+}
+
+function vReviewAgg(spec) {
+  const quickPicks = ["Lead Source Category","Lead Source Details","Lead Owner","Lead Status","Investment Timeframe","Lead Rating","State / Province"];
+  return `<div class="card">
+    <div class="card-title">Count / group by</div>
+    <div class="help">The single field FranConnect will count values of. Every unique value becomes one row in the report.</div>
+    <input type="text" id="groupByInput" value="${esc(spec.groupBy||"")}" oninput="S.spec.groupBy=this.value" placeholder='e.g. "Lead Source Category" or "Lead Owner"'>
+    <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:8px">
+      ${quickPicks.map(s => `<span class="chip" onclick="S.spec.groupBy='${s}';document.getElementById('groupByInput').value='${s}'">${s}</span>`).join("")}
+    </div>
+  </div>`;
+}
+
+function vReviewColumns(spec) {
+  const cols = spec.columns || [];
+  return `<div class="card">
+    <div class="card-title">Columns <span style="font-weight:400;color:var(--muted);font-size:13px">(${cols.length})</span></div>
+    <div class="help">Add, remove, or rename columns. The first three are always included. Use the exact field name as it appears in FranConnect.</div>
+    <div id="colRows" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px">
+      ${cols.map((c,i) => colRow(c,i)).join("")}
+    </div>
+    <button class="add-btn" onclick="S.spec.columns.push({name:'',tab:''});rerenderCols()">+ Add a column</button>
+    <div class="tip"><strong>Not sure of a field name?</strong> Open a real lead record in FranConnect and copy the label exactly.</div>
+  </div>`;
+}
+
+
+// ── Field validation helpers ──────────────────────────────────────────────────
+
+// Flatten all known Sales fields into a searchable list
+function getSalesFieldList() {
+  const list = [];
+  const COMMON = ["First Name","Last Name","Inquiry Date","Email","Mobile","Work Phone","Home Phone",
+    "City","State / Province","Country","Zip / Postal Code"];
+  COMMON.forEach(n => list.push({name:n, tab:"Primary Info > Contact Information"}));
+  [
+    {name:"Lead Status",tab:"Primary Info > Lead Details"},
+    {name:"Lead Owner",tab:"Primary Info > Lead Details"},
+    {name:"Lead Source Category",tab:"Primary Info > Lead Details"},
+    {name:"Lead Source Details",tab:"Primary Info > Lead Details"},
+    {name:"Cash Available for Investment",tab:"Primary Info > Lead Details"},
+    {name:"Current Net Worth",tab:"Primary Info > Lead Details"},
+    {name:"Investment Timeframe",tab:"Primary Info > Lead Details"},
+    {name:"Lead Rating",tab:"Primary Info > Lead Details"},
+    {name:"Franchise Awarded",tab:"Primary Info > Lead Details"},
+    {name:"Next Call Date",tab:"Primary Info > Lead Details"},
+    {name:"Marketing Code",tab:"Primary Info > Lead Details"},
+    {name:"Sales Person",tab:"Primary Info > Lead Details"},
+    {name:"Heat Index",tab:"Qualification Details > Internal Analysis"},
+    {name:"Cash Available for Investment",tab:"Qualification Details > Internal Analysis"},
+    {name:"Current Net Worth",tab:"Qualification Details > Internal Analysis"},
+    {name:"Investment Timeframe",tab:"Qualification Details > Internal Analysis"},
+    {name:"Background Check Approval",tab:"Qualification Details > Internal Analysis"},
+    {name:"Employment Background",tab:"Qualification Details > Internal Analysis"},
+  ].forEach(f => list.push(f));
+  return list;
+}
+
+function fuzzyMatch(fieldName, fieldList) {
+  if (!fieldName) return null;
+  const q = fieldName.toLowerCase().trim();
+  // Exact match
+  const exact = fieldList.find(f => f.name.toLowerCase() === q);
+  if (exact) return {match: exact, score: 1.0};
+  // Contains match
+  const contains = fieldList.filter(f => f.name.toLowerCase().includes(q) || q.includes(f.name.toLowerCase()));
+  if (contains.length) return {match: contains[0], score: 0.8};
+  // Word overlap
+  const qWords = q.split(/\s+/);
+  let best = null, bestScore = 0;
+  fieldList.forEach(f => {
+    const fWords = f.name.toLowerCase().split(/\s+/);
+    const overlap = qWords.filter(w => w.length > 2 && fWords.some(fw => fw.includes(w) || w.includes(fw))).length;
+    const score = overlap / Math.max(qWords.length, fWords.length);
+    if (score > bestScore) { bestScore = score; best = f; }
+  });
+  if (bestScore > 0.3) return {match: best, score: bestScore};
+  return null;
+}
+
+function getColStatus(col) {
+  const list = getSalesFieldList();
+  const exact = list.find(f => f.name.toLowerCase() === (col.name||"").toLowerCase().trim());
+  if (exact) return {status:"ok", suggestion:null};
+  if (col.confident === false) {
+    const fm = fuzzyMatch(col.name, list);
+    return {status:"warn", suggestion: fm ? fm.match : null};
+  }
+  // Not confident:false but also not in dict — check dictionary
+  const fm = fuzzyMatch(col.name, list);
+  if (!fm || fm.score < 0.5) return {status:"unknown", suggestion: fm ? fm.match : null};
+  return {status:"ok", suggestion:null}; // close enough
+}
+
+function colRow(col, i) {
+  const locked = i < 3;
+  const {status, suggestion} = locked ? {status:"ok",suggestion:null} : getColStatus(col);
+  const statusIcon = status === "ok"
+    ? `<div class="col-status col-status-ok" title="Field recognized">✓</div>`
+    : status === "warn"
+    ? `<div class="col-status col-status-warn" title="Field uncertain — verify name">⚠</div>`
+    : `<div class="col-status col-status-unknown" title="Field not recognized">?</div>`;
+
+  const suggestionHTML = (!locked && status !== "ok" && suggestion)
+    ? `<div class="col-suggestion">
+        Did you mean: <button onclick="S.spec.columns[${i}].name='${suggestion.name.replace(/'/,"\\'")}';S.spec.columns[${i}].tab='${suggestion.tab.replace(/'/,"\\'")}';S.spec.columns[${i}].confident=true;rerenderCols()">${esc(suggestion.name)}</button>
+        <span style="opacity:.7">(${esc(suggestion.tab)})</span>
+      </div>`
+    : (!locked && status === "unknown" && !suggestion)
+    ? `<div class="col-suggestion">⚠ Could not find this field — open a lead record in FranConnect and copy the label exactly.</div>`
+    : "";
+
+  return `<div style="margin-bottom:${suggestionHTML?'4px':'2px'}">
+    <div style="display:grid;grid-template-columns:20px 1fr auto 26px;gap:6px;align-items:center">
+      ${statusIcon}
+      <input type="text" value="${esc(col.name)}" oninput="S.spec.columns[${i}].name=this.value" onblur="rerenderCols()" placeholder="Field name"
+        ${locked ? 'readonly style="background:#F8FAFB;color:var(--muted)"' : ""}
+        style="border-color:${status==='unknown'?'var(--red-border)':status==='warn'?'var(--amber-border)':''}">
+      <span style="font-size:11px;color:var(--hint);white-space:nowrap;max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${esc(col.tab||"")}">${esc(col.tab||"")}</span>
+      ${locked
+        ? '<span></span>'
+        : `<button class="rmv" onclick="S.spec.columns.splice(${i},1);rerenderCols()" aria-label="Remove">&times;</button>`}
+    </div>
+    ${suggestionHTML}
+  </div>`;
+}
+
+function rerenderCols() {
+  const el = document.getElementById("colRows");
+  if (el) el.innerHTML = (S.spec.columns||[]).map((c,i) => colRow(c,i)).join("");
+}
+
+function vReviewFilters(spec) {
+  const filters = spec.filters || [];
+  return `<div class="card">
+    <div class="card-title">Filters <span style="font-weight:400;color:var(--muted);font-size:13px">${filters.length ? "("+filters.length+" applied)" : "(none)"}</span></div>
+    ${filters.length
+      ? `<div class="help">Translated from your description into FranConnect field instructions. Each row = one row in FC&#39;s filter builder. All filters use AND logic.</div>`
+      : `<div class="help">No filters detected. Add one below to narrow the report, or leave blank to include all leads.</div>`}
+    <div id="filterRows" style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px">
+      ${filters.map((f,i) => filterRow(f,i)).join("")}
+    </div>
+    <button class="add-btn" onclick="addBlankFilter()">+ Add a filter</button>
+  </div>`;
+}
+
+function filterRow(f, i) {
+  const noVal = ["is empty","is not empty","is in this month","is in last month","is in this year","is in last year","is in the last 7 days"].includes(f.operator);
+  return `<div style="background:${f.warning ? "#FFFBF0" : "#F8FAFB"};border:1px solid ${f.warning ? "var(--amber-border)" : "var(--border)"};border-radius:var(--rs);padding:9px 11px">
+    ${f.warning ? `<div style="font-size:11px;color:var(--amber-text);margin-bottom:6px;display:flex;gap:5px"><span>&#9888;</span><span>${esc(f.warning)}</span></div>` : ""}
+    <div style="display:grid;grid-template-columns:1fr 150px 1fr 26px;gap:5px;align-items:center">
+      <input type="text" value="${esc(f.field)}" placeholder="Field name" oninput="S.spec.filters[${i}].field=this.value">
+      <select onchange="S.spec.filters[${i}].operator=this.value;rerenderFilters()">
+        ${FILTER_OPS.map(op => `<option ${f.operator===op?"selected":""}>${op}</option>`).join("")}
+      </select>
+      <input type="text" value="${esc(f.value||"")}" placeholder="${noVal ? "(no value needed)" : "Value"}"
+        ${noVal ? 'disabled style="opacity:.45"' : ""} oninput="S.spec.filters[${i}].value=this.value">
+      <button class="rmv" onclick="S.spec.filters.splice(${i},1);rerenderFilters()" aria-label="Remove">&times;</button>
+    </div>
+    ${!f.confident ? `<div style="font-size:11px;color:var(--muted);margin-top:5px">&#9888; Uncertain &mdash; verify this field name in FranConnect.</div>` : ""}
+  </div>`;
+}
+
+function rerenderFilters() {
+  const el = document.getElementById("filterRows");
+  if (el) el.innerHTML = (S.spec.filters||[]).map((f,i) => filterRow(f,i)).join("");
+}
+
+function addBlankFilter() {
+  S.spec.filters.push({field:"",operator:"equals",value:"",confident:true,warning:null});
+  rerenderFilters();
+}
+
+function vReviewSuggestions(spec) {
+  return `<div class="card" style="border-color:var(--fc-border);background:var(--fc-light)">
+    <div style="font-size:13px;font-weight:600;color:var(--fc-dark);margin-bottom:.6rem">&#128161; You might also want&hellip;</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      ${spec.suggestions.map((s,i) => `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;background:var(--surface);border:1px solid var(--fc-border);border-radius:var(--rs);padding:8px 11px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">${esc(s.label)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:1px">${esc(s.reason)}</div>
+        </div>
+        <button class="btn btn-sm btn-primary" style="font-size:12px;padding:4px 10px;flex-shrink:0" onclick="addSuggestion(${i})">Add</button>
+      </div>`).join("")}
+    </div>
+  </div>`;
+}
+
+function addSuggestion(i) {
+  const s = S.spec.suggestions[i];
+  if (!s) return;
+  if (s.type === "column") {
+    S.spec.columns.push({name: s.label, tab: ""});
+  } else {
+    S.spec.filters.push({field: s.label, operator: "equals", value: "", confident: false, warning: "Added from suggestion — set operator and value."});
+  }
+  S.spec.suggestions.splice(i, 1);
+  render();
+}
+
+// ── STEP 4: Generate ──────────────────────────────────────────────────────────
+function vGenerating() {
+  return `<div class="loading">
+    <div class="spinner"></div>
+    <div>Building your report&hellip;</div>
+    <div style="font-size:12px;color:var(--hint)">Generating preview and briefing</div>
+  </div>`;
+}
+
+async function generate() {
+  S.view = "generating";
+  S.mockupData = null;
+  S.briefingText = "";
+  render();
+
+  const spec = S.spec;
+  const isAgg = spec.reportType === "aggregate";
+
+  const [mockup, briefing] = await Promise.all([
+    buildMockup(isAgg, spec),
+    Promise.resolve(buildBriefing(isAgg, spec))
+  ]);
+
+  S.mockupData = mockup;
+  S.briefingText = briefing;
+  S.view = "mockup";
+  render();
+}
+
+async function buildMockup(isAgg, spec) {
+  if (!isAgg) {
+    return {
+      type: "tabular",
+      columns: (spec.columns||[]).map(c => c.name).filter(Boolean),
+      filters: (spec.filters||[]).filter(f => f.field)
+    };
+  }
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json", "x-api-key": "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", "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 500,
+        system: "Return ONLY valid JSON. No markdown.",
+        messages: [{role: "user", content: `Generate realistic franchise industry aggregate report data for a FranConnect leads report.
+Group by: "${spec.groupBy}"
+Return JSON: {"rows":[{"label":"...","count":42},...], "maxCount":123}
+Use 5-8 rows with realistic values for "${spec.groupBy}".`}]
+      })
+    });
+    const data = await res.json();
+    const raw = (data.content?.find(b => b.type === "text")?.text || "{}").replace(/```[a-z]*|```/g, "").trim();
+    return {type: "aggregate", ...JSON.parse(raw)};
+  } catch(e) {
+    return {type: "aggregate", rows:[{label:"(preview unavailable)",count:0}], maxCount:1};
+  }
+}
+
+function buildBriefing(isAgg, spec) {
+  const name = esc(spec.reportName || "[name your report]");
+  const cols = spec.columns || [];
+  const filters = spec.filters || [];
+  const modType = isAgg ? "Aggregate &mdash; count" : "Tabular &mdash; list";
+
+  // ── Header ────────────────────────────────────────────────────────────────
+  let out = `<div class="briefing">
+    <div class="bf-header">
+      <div class="bf-header-name">${name}</div>
+      <div class="bf-header-meta">
+        <span>Sales module</span>
+        <span>${modType}</span>
+      </div>
+    </div>
+    <div class="bf-body">`;
+
+  // ── Summary ───────────────────────────────────────────────────────────────
+  out += `<div class="bf-section">
+    <div class="bf-section-title">Summary</div>
+    ${S.description ? `<div class="bf-row"><span class="bf-row-label">Based on</span><span class="bf-row-value" style="font-family:inherit;font-style:italic;color:var(--muted)">&ldquo;${esc(S.description)}&rdquo;</span></div>` : ""}
+    <div class="bf-row"><span class="bf-row-label">Module</span><span class="bf-row-value">Sales</span></div>
+    <div class="bf-row"><span class="bf-row-label">Report type</span><span class="bf-row-value">${modType}</span></div>
+  </div>`;
+
+  // ── Columns or Group By ───────────────────────────────────────────────────
+  if (isAgg) {
+    out += `<div class="bf-section">
+      <div class="bf-section-title">Count / Group by</div>
+      <div class="bf-row"><span class="bf-row-label">Field</span><span class="bf-row-value">${esc(spec.groupBy || "[not set]")}</span></div>
+      <div class="bf-instr" style="margin-top:6px"><ul>
+        <li>FranConnect will count how many leads share each value of this field</li>
+        <li>Find it under <strong>Choose Field to Group By</strong> in the report builder</li>
+        <li>Most grouping fields are on: <strong>Primary Info &rsaquo; Lead Details</strong></li>
+      </ul></div>
+    </div>`;
+  } else {
+    out += `<div class="bf-section">
+      <div class="bf-section-title">Columns &nbsp;<span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:12px;color:var(--hint)">${cols.length} total</span></div>
+      <div class="bf-col-list">
+        ${cols.map((c, i) => `
+        <div class="bf-col-item">
+          <span class="bf-col-num">${i+1}</span>
+          <span class="bf-col-name">${esc(c.name)}</span>
+          ${c.tab ? `<span class="bf-col-tab">${esc(c.tab)}</span>` : ""}
+        </div>`).join("")}
+      </div>
+      <div class="bf-instr" style="margin-top:8px"><ul>
+        <li>Add each field using the field picker &mdash; <strong>type the first letters</strong> to jump to it</li>
+        <li>Pick each field from the <strong>correct tab</strong> shown in grey above</li>
+        <li>Drag fields into order using the <strong>4-arrow handle</strong></li>
+        <li>Check <strong>&ldquo;sortable&rdquo;</strong> on any field you may want to sort by later</li>
+      </ul></div>
+    </div>`;
+  }
+
+  // ── Filters ───────────────────────────────────────────────────────────────
+  out += `<div class="bf-section">
+    <div class="bf-section-title">Filters</div>`;
+
+  if (!filters.length) {
+    out += `<div style="font-size:13px;color:var(--muted);font-style:italic">None &mdash; report will include all leads.</div>`;
+  } else {
+    out += `<div style="font-size:12px;color:var(--muted);margin-bottom:.6rem">All filters use <strong>AND logic</strong> &mdash; every row must be true for a lead to appear. Add each as a separate row in FranConnect&rsquo;s filter builder.</div>`;
+    out += `<div style="display:flex;flex-direction:column;gap:6px">`;
+    filters.forEach((f, i) => {
+      const noVal = ["is empty","is not empty","is in this month","is in last month","is in this year","is in last year","is in the last 7 days"].includes(f.operator);
+      out += `<div class="bf-filter-card ${f.warning || !f.confident ? 'warn' : ''}">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Filter ${i+1}</div>
+        <div class="bf-filter-row"><span class="bf-filter-label">Field</span><span class="bf-filter-val">${esc(f.field)}</span></div>
+        <div class="bf-filter-row"><span class="bf-filter-label">Operator</span><span class="bf-filter-val">${esc(f.operator)}</span></div>
+        ${!noVal && f.value ? `<div class="bf-filter-row"><span class="bf-filter-label">Value</span><span class="bf-filter-val">${esc(f.value)}</span></div>` : ""}
+        ${f.warning ? `<div class="bf-warn-msg"><span>&#9888;</span><span>${esc(f.warning)}</span></div>` : ""}
+        ${!f.confident ? `<div class="bf-warn-msg"><span>&#9888;</span><span>Uncertain match &mdash; verify this field name in FranConnect.</span></div>` : ""}
+      </div>`;
+      if (i < filters.length - 1) out += `<div class="bf-filter-and">AND</div>`;
+    });
+    out += `</div>`;
+    const hasSourceDetail = filters.some(f => f.field && f.field.toLowerCase().includes("source detail"));
+    if (hasSourceDetail) {
+      out += `<div class="bf-note" style="margin-top:8px">
+        <strong>&#128073; Dependent dropdown reminder</strong><br>
+        Lead Source Details only populates after you pick a Lead Source Category &mdash; the same way State only appears after you choose a Country. Make sure the Category filter row is added <em>before</em> the Details row in the filter builder.
+      </div>`;
+    }
+  }
+  out += `</div>`;
+
+  // ── Build steps ───────────────────────────────────────────────────────────
+  const steps = [
+    `Go to the <strong>Sales</strong> module`,
+    `Open <strong>Reports &rsaquo; Custom Reports</strong>`,
+    `Click <strong>Create New Report</strong>`,
+    `Choose <strong>${isAgg ? "Aggregation" : "Tabular"}</strong> &rarr; Next`,
+    `Name it: <strong>${name}</strong>`,
+    `Set visibility &mdash; <strong>Private</strong> is recommended unless sharing`,
+    filters.length
+      ? `Add your filters &mdash; see the filter cards above (AND logic, one row per filter)`
+      : `Skip filters &mdash; report will include all leads`,
+  ];
+  if (isAgg) {
+    steps.push(`Select a chart type &mdash; bar, line, pie, or overlay`);
+    steps.push(`Under <strong>Choose Field to Group By</strong>, select: <strong>${esc(spec.groupBy||"[your field]")}</strong>`);
+    steps.push(`Under <strong>Choose Display Summaries</strong>, select: <strong>Count</strong>`);
+  } else {
+    steps.push(`Add your columns via the field picker &mdash; use the list above`);
+  }
+  steps.push(`Click <strong>Modify</strong> to save &mdash; <em>the button says &ldquo;Modify&rdquo; not &ldquo;Save&rdquo;, that is correct</em>`);
+
+  out += `<div class="bf-section">
+    <div class="bf-section-title">How to build this in FranConnect</div>
+    <div class="bf-steps">
+      ${steps.map((s, i) => `<div class="bf-step">
+        <div class="bf-step-num">${i+1}</div>
+        <div class="bf-step-text">${s}</div>
+      </div>`).join("")}
+    </div>
+  </div>`;
+
+  // ── Notes ─────────────────────────────────────────────────────────────────
+  out += `<div class="bf-section">
+    <div class="bf-section-title">Good to know</div>
+    <div class="bf-note"><ul>
+      <li><strong>Lead Status values</strong> are customized per account &mdash; verify your status names before using them as filter values.</li>
+      <li><strong>Custom fields</strong> appear in the field picker just like standard fields &mdash; use the exact label from a real lead record to find them.</li>
+    </ul></div>
+  </div>`;
+
+  out += `</div></div>`;
+  return out;
+}
+
+
+// ── STEP 5: Mockup + briefing ─────────────────────────────────────────────────
+function vMockup() {
+  const spec = S.spec || {};
+  const isAgg = spec.reportType === "aggregate";
+  const name = spec.reportName || "My Leads Report";
+  const data = S.mockupData;
+  const filters = (spec.filters||[]).filter(f => f.field);
+
+  let mockHtml = "";
+  if (!data) {
+    mockHtml = `<div class="loading"><div class="spinner"></div></div>`;
+  } else if (isAgg) {
+    const rows = data.rows || [];
+    const max = data.maxCount || Math.max(...rows.map(r => r.count), 1);
+    mockHtml = `<div class="agg-chart">
+      <div class="agg-chart-title">Count by ${esc(spec.groupBy||"")}</div>
+      ${rows.map(r => `<div class="bar-row">
+        <div class="bar-label" title="${esc(r.label)}">${esc(r.label)}</div>
+        <div class="bar-track"><div class="bar-fill" style="width:${Math.round(r.count/max*100)}%"></div></div>
+        <div class="bar-val">${r.count}</div>
+      </div>`).join("")}
+      <div style="font-size:11px;color:var(--hint);margin-top:1rem">Sample data &mdash; for planning only</div>
+    </div>`;
+  } else {
+    const cols = data.columns || [];
+    const filterBar = filters.length
+      ? `<div class="mock-filter-bar">Filtered by: ${filters.map(f =>
+          `<span class="mock-filter-chip">${esc(f.field)} ${esc(f.operator)}${f.value ? " &ldquo;"+esc(f.value)+"&rdquo;" : ""}</span>`
+        ).join(" ")}</div>`
+      : "";
+    mockHtml = filterBar + `<div class="mock-table-wrap">
+      <table class="mock-table"><thead><tr>
+        ${cols.map(c => `<th>${esc(c)}</th>`).join("")}
+      </tr></thead><tbody>
+        ${Array(6).fill(null).map(() => `<tr>${cols.map(() => "<td>&mdash; your data &mdash;</td>").join("")}</tr>`).join("")}
+      </tbody></table>
+    </div>
+    <div class="mock-footer">Column headers are yours &mdash; rows show where your real lead data will appear.</div>`;
+  }
+
+  const badgeCols = isAgg ? (spec.groupBy ? [spec.groupBy] : []) : (data?.columns||[]);
+
+  return `
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;flex-wrap:wrap;gap:8px">
+    <div>
+      <div style="font-size:16px;font-weight:600">Your report</div>
+      <div style="font-size:13px;color:var(--muted);margin-top:2px">Use the briefing below to build this in FranConnect.</div>
+    </div>
+    <div style="display:flex;gap:7px">
+      <button class="btn btn-ghost btn-sm" onclick="S.view='review';render()">&#8592; Edit spec</button>
+      <button class="btn btn-ghost btn-sm" onclick="S.view='describe';S.description='';S.spec=null;render()">Start over</button>
+    </div>
+  </div>
+
+  <div class="mockup-wrap">
+    <div class="mockup-bar">
+      <span class="mockup-bar-name">${esc(name)}</span>
+      <span class="mockup-bar-meta">Sales &middot; ${isAgg ? "Aggregate &middot; Sample data" : "Tabular &middot; Column preview"}</span>
+    </div>
+    ${mockHtml}
+  </div>
+
+  <div style="display:flex;gap:7px;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+    <span class="badge ${isAgg ? "badge-agg" : "badge-tab"}">${isAgg ? "Aggregate" : "Tabular"}</span>
+    ${badgeCols.filter(Boolean).map(c => `<span class="pill">${esc(c)}</span>`).join("")}
+  </div>
+
+  <div class="card">
+    <div class="card-title">&#128203; Report briefing</div>
+    <div style="font-size:13px;color:var(--muted);margin:.2rem 0 .5rem">Keep this open on a second screen while building in FranConnect, or share it with your admin.</div>
+    <div id="briefingBox">${S.briefingText}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
+      <button class="copy-btn" id="copyBriefingBtn" onclick="copyBriefing()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy as plain text
+      </button>
+      <button class="copy-btn" onclick="printBriefing()" style="color:var(--text);border-color:var(--border-strong)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print briefing
+      </button>
+    </div>
+  </div>`;
+}
+
+function copyBriefing() {
+  const spec = S.spec || {};
+  const isAgg = spec.reportType === "aggregate";
+  const cols = spec.columns || [];
+  const filters = spec.filters || [];
+  const name = spec.reportName || "[name your report]";
+
+  const colLines = cols.map((c,i) => "  " + (i+1) + ". " + c.name + (c.tab ? "  [" + c.tab + "]" : "")).join("\n");
+  const filterLines = filters.map((f,i) => {
+    let s = "  Filter " + (i+1) + ":\n    Field: " + f.field + "\n    Operator: " + f.operator;
+    if (f.value) s += "\n    Value: " + f.value;
+    if (f.warning) s += "\n    Note: " + f.warning;
+    return s;
+  }).join("\n");
+
+  const parts = [
+    "FRANCONNECT LEADS REPORT BRIEFING",
+    "Report name: " + name,
+    "Type: " + (isAgg ? "Aggregate (count)" : "Tabular (list)")
+  ];
+  if (S.description) parts.push("Based on: \"" + S.description + "\"");
+  parts.push("");
+  if (isAgg) {
+    parts.push("GROUP BY: " + (spec.groupBy || "[not set]"));
+  } else {
+    parts.push("COLUMNS:");
+    parts.push(colLines);
+  }
+  parts.push("");
+  if (filters.length) {
+    parts.push("FILTERS (AND logic):");
+    parts.push(filterLines);
+  } else {
+    parts.push("FILTERS: None");
+  }
+  parts.push("");
+  parts.push("HOW TO BUILD:");
+  parts.push("1. Sales > Reports > Custom Reports");
+  parts.push("2. Create New Report > " + (isAgg ? "Aggregation" : "Tabular"));
+  parts.push("3. Name: \"" + name + "\"");
+  parts.push("4. Visibility: Private");
+  parts.push(filters.length ? "5. Add filters (see above)" : "5. Skip filters");
+  if (isAgg) {
+    parts.push("6. Group By: " + (spec.groupBy || ""));
+    parts.push("7. Display Summaries: Count");
+    parts.push("8. Click Modify to save");
+  } else {
+    parts.push("6. Add columns (see list above)");
+    parts.push("7. Click Modify to save");
+  }
+
+    const textToCopy = parts.join("\n");
+  function showCopied() {
+    const btn = document.getElementById("copyBriefingBtn");
+    if (btn) {
+      btn.innerHTML = "&#10003; Copied!";
+      setTimeout(() => {
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy as plain text';
+      }, 2000);
+    }
+  }
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(textToCopy).then(showCopied).catch(() => fallbackCopy(textToCopy, showCopied));
+  } else {
+    fallbackCopy(textToCopy, showCopied);
+  }
+}
+function printBriefing() {
+  const el = document.getElementById("briefingBox");
+  if (!el) return;
+  // Inject a print-only stylesheet and trigger window.print()
+  // Works on file://, http://, and https:// without needing a popup
+  let printStyle = document.getElementById("printStyle");
+  if (!printStyle) {
+    printStyle = document.createElement("style");
+    printStyle.id = "printStyle";
+    document.head.appendChild(printStyle);
+  }
+  printStyle.textContent = `
+    @media print {
+      body > .page > .hdr,
+      body > .page > div:not(:last-child),
+      #briefingBox ~ * { display: none !important; }
+      .col-status, .col-status-ok, .col-status-warn,
+      .col-status-unknown, .col-suggestion { display: none !important; }
+      body { background: #fff !important; padding: 1rem !important; }
+      .briefing { border: 1px solid #E2E8F0 !important; border-radius: 8px !important; }
+    }
+  `;
+  window.print();
+  // Clean up after print dialog closes
+  setTimeout(() => { printStyle.textContent = ""; }, 2000);
+}
+
+function fallbackCopy(text, callback) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;top:-9999px;left:-9999px;opacity:0";
+  document.body.appendChild(ta);
+  ta.focus();
+  ta.select();
+  try {
+    document.execCommand("copy");
+    if (callback) callback();
+  } catch(e) {
+    alert("Copy not supported in this browser — please select the briefing text and copy manually.");
+  }
+  document.body.removeChild(ta);
+}
+
+
+render();
+</script>
+</body>
+</html>
