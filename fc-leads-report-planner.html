@@ -492,8 +492,12 @@ async function processFile(file) {
     }
   } catch(e) {
     S.uploadContent = null;
+    console.error('processFile error:', e);
     alert('Could not read file: ' + e.message);
   }
+  // Always re-enable the button if upload succeeded
+  const btn = document.getElementById('interpBtn');
+  if (btn) btn.disabled = !S.uploadContent;
   render();
 }
 
@@ -1225,6 +1229,16 @@ function vMockup() {
     <div class="card-title">&#128203; Report briefing</div>
     <div style="font-size:13px;color:var(--muted);margin:.2rem 0 .5rem">Keep this open on a second screen while building in FranConnect, or share it with your admin.</div>
     <div id="briefingBox">${S.briefingText}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:.75rem">
+      <button class="copy-btn" id="copyBriefingBtn" onclick="copyBriefing()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy as plain text
+      </button>
+      <button class="copy-btn" onclick="printBriefing()" style="color:var(--text);border-color:var(--border-strong)">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Print briefing
+      </button>
+    </div>
   </div>`;
 }
 
