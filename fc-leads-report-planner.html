@@ -520,31 +520,58 @@ function readTextFile(file) {
 }
 
 async function readExcelAsText(file) {
-  // Use SheetJS if available, otherwise fall back to CSV-like extraction
   return new Promise((resolve, reject) => {
     const r = new FileReader();
-    r.onload = (e) => {
+    r.onload = async (e) => {
       try {
+        // First try SheetJS if available
         if (window.XLSX) {
           const wb = XLSX.read(e.target.result, {type:'array'});
           let out = '';
           wb.SheetNames.forEach(sname => {
             const ws = wb.Sheets[sname];
-            out += `Sheet: ${sname}\n` + XLSX.utils.sheet_to_csv(ws) + '\n\n';
+            out += 'Sheet: ' + sname + '\n' + XLSX.utils.sheet_to_csv(ws) + '\n\n';
           });
           resolve(out.slice(0, 12000));
-        } else {
-          // Fallback: extract printable ASCII strings from binary
-          const arr = new Uint8Array(e.target.result);
-          let text = '', current = '';
-          for (let i = 0; i < arr.length; i++) {
-            const c = arr[i];
-            if (c >= 32 && c < 127) { current += String.fromCharCode(c); }
-            else { if (current.length > 3) text += current + '\t'; current = ''; }
+          return;
+        }
+        // Fallback: use JSZip to extract sharedStrings.xml and sheet data
+        if (window.JSZip) {
+          const zip = await JSZip.loadAsync(e.target.result);
+          let text = '';
+          // Get shared strings (the actual cell text values)
+          const ssFile = zip.file('xl/sharedStrings.xml');
+          if (ssFile) {
+            const xml = await ssFile.async('string');
+            // Extract text content from <t> tags
+            const matches = xml.match(/<t[^>]*>([^<]+)<\/t>/g) || [];
+            const strings = matches.map(m => m.replace(/<[^>]+>/g, ''));
+            text += strings.join('\t') + '\n';
+          }
+          // Also try to get sheet1 data for structure
+          const sheetFile = zip.file('xl/worksheets/sheet1.xml');
+          if (sheetFile) {
+            const xml = await sheetFile.async('string');
+            // Extract cell values
+            const vals = xml.match(/<v>([^<]+)<\/v>/g) || [];
+            text += vals.map(v => v.replace(/<[^>]+>/g, '')).join('\t') + '\n';
           }
           resolve(text.slice(0, 12000));
+          return;
         }
-      } catch(err) { reject(err); }
+        // Last resort: binary ASCII extraction
+        const arr = new Uint8Array(e.target.result);
+        let out = '', cur = '';
+        for (let i = 0; i < arr.length; i++) {
+          const c = arr[i];
+          if (c >= 32 && c < 127) { cur += String.fromCharCode(c); }
+          else { if (cur.length > 3) out += cur + '\t'; cur = ''; }
+        }
+        resolve(out.slice(0, 12000));
+      } catch(err) {
+        console.error('readExcelAsText error:', err);
+        reject(err);
+      }
     };
     r.onerror = reject;
     r.readAsArrayBuffer(file);
@@ -644,20 +671,25 @@ JSON shape:
     const contextNote = S.description ? `
 
 Additional context from user: "${S.description}"` : "";
-    const uploadPrompt = `You are a FranConnect Sales module reporting expert. A user uploaded a file showing a report they like or want to recreate.
+    const uploadPrompt = `You are a FranConnect Sales module reporting expert.
 
-Analyze the uploaded file and extract the report structure: what columns are shown, any visible filters, the report title, and whether it is a list (tabular) or a chart/count (aggregate).
+A user uploaded a file — either a screenshot of a FranConnect Sales/Leads report, an Excel file with field names, or a document describing what they need.
 
-Then map what you see to the exact FranConnect Sales field names from the reference below, and return a spec.
+Your job:
+1. Read the file carefully. If it is a screenshot, read the column headers, report title, any visible filters, and whether it shows a list of leads (tabular) or a chart/count (aggregate).
+2. If it is an Excel or text file, read the field names or column headers present.
+3. Map everything you see to the exact FranConnect Sales field names and tab paths from the reference below.
+4. Return a complete report spec.
+
 ${contextNote}
 
 ${FIELD_KNOWLEDGE}
 
-Return ONLY valid JSON in this shape:
+Return ONLY valid JSON in EXACTLY this shape — no markdown, no explanation:
 {
   "reportType": "tabular",
   "reportName": "string",
-  "columns": [{"name": "string", "tab": "string"}],
+  "columns": [{"name": "string", "tab": "string", "confident": true}],
   "groupBy": null,
   "filters": [{"field": "string", "operator": "string", "value": "string", "confident": true, "warning": null}],
   "suggestions": [{"type": "column", "label": "string", "reason": "string"}]
