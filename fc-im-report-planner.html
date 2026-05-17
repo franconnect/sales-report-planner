@@ -1460,8 +1460,11 @@ JSON shape:
         messages:[{role:"user",content:messageContent}]})});
     const data = await res.json();
     const raw=(data.content?.find(b=>b.type==="text")?.text||"{}").replace(/```[a-z]*|```/g,"").trim();
+    console.log("Claude raw:",raw.slice(0,500));
     S.spec = JSON.parse(raw);
+    console.log("Spec columns:",S.spec.columns?.length,"filters:",S.spec.filters?.length);
   } catch(e) {
+    console.error("interpret error:",e.message,"raw:",typeof raw!=="undefined"?raw.slice(0,200):"n/a");
     S.spec = {error:true,reportType:"tabular",reportName:"",columns:[],groupBy:null,filters:[],tabCount:0,tabWarning:null,suggestions:[]};
   }
   S.view="review"; render();

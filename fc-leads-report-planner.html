@@ -736,8 +736,11 @@ ${basePrompt}`;
     });
     const data = await res.json();
     const raw = (data.content?.find(b => b.type === "text")?.text || "{}").replace(/```[a-z]*|```/g, "").trim();
+    console.log("Claude raw response:", raw.slice(0, 500));
     S.spec = JSON.parse(raw);
+    console.log("Parsed spec:", JSON.stringify(S.spec).slice(0, 300));
   } catch(e) {
+    console.error("interpret() error:", e, "raw was:", typeof raw !== 'undefined' ? raw.slice(0,200) : 'n/a');
     S.spec = {error: true, reportType: "tabular", reportName: "", columns: [], groupBy: null, filters: [], suggestions: []};
   }
 
